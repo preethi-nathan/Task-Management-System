@@ -4,7 +4,7 @@
 ## Features
 
 - Create Task
-- Get All Tasks (with pagination)
+- Get All Tasks 
 - Update Task Status
 - Delete Task
 - Input validation and error handling
