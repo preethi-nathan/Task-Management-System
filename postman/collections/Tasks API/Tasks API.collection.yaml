@@ -1,0 +1,16 @@
+$kind: collection
+name: 'Tasks API'
+description: |-
+  Local Postman collection (v3 filesystem format) for the Tasks API.
+
+variables:
+  - key: baseUrl
+    value: '{{baseUrl}}'
+    description: 'Base URL (resolved from the active environment).'
+
+# Controls request ordering in the Postman UI
+items:
+  - 'Get-all-tasks.request.yaml'
+  - 'Create-task.request.yaml'
+  - 'Update-status.request.yaml'
+  - 'Delete-task.request.yaml'

@@ -1,0 +1,20 @@
+$kind: http-request
+name: 'Update status'
+method: PATCH
+url: '{{baseUrl}}/api/tasks/1/status'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "completed"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status code is 200', () => pm.response.to.have.status(200));
+      pm.test('Response is JSON', () => pm.response.to.be.json);
