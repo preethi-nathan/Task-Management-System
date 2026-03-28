@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Task Manager API",
-    "description": "Task Management REST API",
+    "name": "Task Manager",
+    "description": "Task Management System",
     "version": "1.0.0"
   },
   "item": [
