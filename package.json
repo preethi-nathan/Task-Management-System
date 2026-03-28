@@ -1,0 +1,22 @@
+{
+  "name": "digitivity-task-api",
+  "version": "1.0.0",
+  "description": "Beginner-friendly Task Management REST API with Node.js, Express, and MySQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mysql",
+    "rest-api",
+    "tasks"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "mysql2": "^3.12.0"
+  }
+}

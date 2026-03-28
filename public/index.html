@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Manager</title>
+    <style>
+      :root {
+        --bg: #f3f7f4;
+        --card: #ffffff;
+        --text: #163020;
+        --muted: #5e6b63;
+        --accent: #2f855a;
+        --danger: #c53030;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at top right, #d8f3dc, var(--bg));
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 0 16px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      form {
+        display: grid;
+        gap: 10px;
+      }
+
+      input,
+      textarea,
+      select,
+      button {
+        font-size: 14px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #d5ded8;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        background: var(--accent);
+        color: white;
+        font-weight: 600;
+      }
+
+      .task {
+        border: 1px solid #e4ece7;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .row button.delete {
+        background: var(--danger);
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          margin: 16px auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Task Manager</h1>
+        <p class="small">Simple UI for your REST API</p>
+
+        <form id="createTaskForm">
+          <input id="title" placeholder="Title" maxlength="100" required />
+          <textarea id="description" placeholder="Description" required></textarea>
+          <button type="submit">Create Task</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content: space-between; align-items: center">
+          <h2 style="margin: 0">All Tasks</h2>
+          <button id="refreshBtn" type="button">Refresh</button>
+        </div>
+        <div id="tasks"></div>
+      </div>
+    </div>
+
+    <script>
+      async function api(path, options) {
+        const res = await fetch(path, {
+          headers: { "Content-Type": "application/json" },
+          ...options,
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Request failed");
+        }
+
+        return data;
+      }
+
+      async function loadTasks() {
+        const tasksEl = document.getElementById("tasks");
+        tasksEl.innerHTML = "Loading...";
+
+        try {
+          const result = await api("/api/tasks");
+
+          if (result.tasks.length === 0) {
+            tasksEl.innerHTML = "<p>No tasks yet.</p>";
+            return;
+          }
+
+          tasksEl.innerHTML = result.tasks
+            .map(
+              (task) => `
+              <div class="task">
+                <strong>${task.title}</strong>
+                <p>${task.description}</p>
+                <p class="small">Status: ${task.status} | Created: ${new Date(task.created_at).toLocaleString()}</p>
+                <div class="row">
+                  <select onchange="changeStatus(${task.id}, this.value)">
+                    <option value="pending" ${task.status === "pending" ? "selected" : ""}>pending</option>
+                    <option value="in_progress" ${task.status === "in_progress" ? "selected" : ""}>in_progress</option>
+                    <option value="completed" ${task.status === "completed" ? "selected" : ""}>completed</option>
+                  </select>
+                  <button class="delete" onclick="deleteTask(${task.id})">Delete</button>
+                </div>
+              </div>
+            `
+            )
+            .join("");
+        } catch (error) {
+          tasksEl.innerHTML = `<p style="color:#c53030">${error.message}</p>`;
+        }
+      }
+
+      async function createTask(event) {
+        event.preventDefault();
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+
+        try {
+          await api("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify({ title, description }),
+          });
+
+          event.target.reset();
+          loadTasks();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      async function changeStatus(id, status) {
+        try {
+          await api(`/api/tasks/${id}/status`, {
+            method: "PATCH",
+            body: JSON.stringify({ status }),
+          });
+          loadTasks();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      async function deleteTask(id) {
+        if (!confirm("Delete this task?")) return;
+
+        try {
+          await api(`/api/tasks/${id}`, { method: "DELETE" });
+          loadTasks();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      document.getElementById("createTaskForm").addEventListener("submit", createTask);
+      document.getElementById("refreshBtn").addEventListener("click", loadTasks);
+      loadTasks();
+    </script>
+  </body>
+</html>
